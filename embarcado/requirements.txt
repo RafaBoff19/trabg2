@@ -1,0 +1,3 @@
+mfrc522
+spidev
+requests
