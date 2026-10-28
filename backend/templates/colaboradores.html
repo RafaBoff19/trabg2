@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Colaboradores{% endblock %}
+{% block content %}
+<div class="row" style="justify-content:space-between">
+  <h1 style="margin:0">Colaboradores</h1>
+  <a class="btn" href="{{ url_for('colaborador_novo') }}" style="flex:0">+ Novo colaborador</a>
+</div>
+<table>
+  <tr><th>Nome</th><th>Matrícula</th><th>Tag RFID</th><th>Cargo</th><th>Acesso à sala</th><th>Status</th><th></th></tr>
+  {% for c in colaboradores %}
+  <tr>
+    <td>{{ c.nome }}</td><td>{{ c.matricula }}</td><td>{{ c.tag }}</td><td>{{ c.cargo }}</td>
+    <td>{{ 'Sim' if c.acesso else 'Não' }}</td><td>{{ 'Ativo' if c.ativo else 'Inativo' }}</td>
+    <td style="white-space:nowrap">
+      <a class="btn sec" href="{{ url_for('colaborador_editar', cid=c.id) }}">Editar</a>
+      <form method="post" action="{{ url_for('colaborador_excluir', cid=c.id) }}" style="display:inline"
+            onsubmit="return confirm('Excluir {{ c.nome }}?')">
+        <button class="btn red" type="submit">Excluir</button>
+      </form>
+    </td>
+  </tr>
+  {% else %}
+  <tr><td colspan="7" class="muted">Nenhum colaborador cadastrado.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

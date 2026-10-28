@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Monitoramento{% endblock %}
+{% block content %}
+<div class="row" style="justify-content:space-between">
+  <h1 style="margin:0">Monitoramento em tempo real</h1>
+  <span class="muted" id="status" style="flex:0;white-space:nowrap">Carregando...</span>
+</div>
+<div id="banner"></div>
+<div class="row" id="cards"></div>
+<div class="row" style="align-items:stretch">
+  <div class="card"><h3 style="margin-top:0">Dentro da sala agora</h3><div id="dentro"></div></div>
+  <div class="card"><h3 style="margin-top:0">Alertas recentes</h3><div id="alertas"></div></div>
+</div>
+<h3>Últimos eventos</h3>
+<table>
+  <thead><tr><th>Data e hora</th><th>Colaborador</th><th>Tag</th><th>Evento</th></tr></thead>
+  <tbody id="ultimos"></tbody>
+</table>
+<script>
+const ROTULO = {ENTRADA:'Entrada', SAIDA:'Saída', ACESSO_NEGADO:'Acesso negado', TENTATIVA_INVASAO:'Tentativa de invasão'};
+function esc(s){ const d = document.createElement('div'); d.textContent = (s == null ? '' : String(s)); return d.innerHTML; }
+function selo(t){ return '<span class="tag t-'+t+'">'+(ROTULO[t]||t)+'</span>'; }
+function quem(e){ return e.nome ? esc(e.nome) : '— tag desconhecida'; }
+function card(titulo, valor, cor){
+  return '<div class="card" style="text-align:center;border-top:4px solid '+cor+'"><div style="font-size:34px;font-weight:bold;color:'+cor+'">'+valor+'</div><div class="muted">'+titulo+'</div></div>';
+}
+async function atualizar(){
+  try {
+    const r = await fetch('/api/painel');
+    if (r.status === 401) { location.href = '/login'; return; }
+    const d = await r.json(), c = d.contadores;
+    document.getElementById('cards').innerHTML =
+      card('Dentro agora', d.dentro.length, '#2E7D32') + card('Entradas hoje', c.ENTRADA, '#2F5496') +
+      card('Saídas hoje', c.SAIDA, '#5b6b8c') + card('Acessos negados', c.ACESSO_NEGADO, '#E69500') +
+      card('Tentativas de invasão', c.TENTATIVA_INVASAO, '#C62828');
+    document.getElementById('dentro').innerHTML = d.dentro.length
+      ? d.dentro.map(p => '<div>'+esc(p.nome)+' <span class="muted">'+esc(p.matricula)+'</span></div>').join('')
+      : '<span class="muted">Ninguém na sala.</span>';
+    document.getElementById('alertas').innerHTML = d.alertas.length
+      ? d.alertas.map(e => '<div style="margin-bottom:6px">'+selo(e.tipo)+' '+quem(e)+' <span class="muted">'+esc(e.timestamp)+'</span></div>').join('')
+      : '<span class="muted">Sem alertas.</span>';
+    document.getElementById('ultimos').innerHTML = d.ultimos.length
+      ? d.ultimos.map(e => '<tr><td>'+esc(e.timestamp)+'</td><td>'+quem(e)+'</td><td>'+esc(e.tag)+'</td><td>'+selo(e.tipo)+'</td></tr>').join('')
+      : '<tr><td colspan="4" class="muted">Nenhum evento ainda.</td></tr>';
+    const agora = new Date(d.agora.replace(' ', 'T'));
+    const recente = d.alertas.find(e => e.tipo === 'TENTATIVA_INVASAO' && (agora - new Date(e.timestamp.replace(' ', 'T'))) < 120000);
+    document.getElementById('banner').innerHTML = recente
+      ? '<div class="msg erro"><b>ALERTA:</b> tentativa de invasão com a tag '+esc(recente.tag)+' às '+esc(recente.timestamp)+'.</div>' : '';
+    document.getElementById('status').textContent = 'Atualizado às ' + d.agora.slice(11);
+  } catch (err) {
+    document.getElementById('status').textContent = 'Sem conexão com o servidor';
+  }
+}
+atualizar(); setInterval(atualizar, 3000);
+</script>
+{% endblock %}
