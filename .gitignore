@@ -1,0 +1,8 @@
+venv/
+__pycache__/
+*.pyc
+*.db
+cache.json
+eventos_pendentes.json
+.ipynb_checkpoints/
+.vscode/
