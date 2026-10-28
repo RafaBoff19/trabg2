@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Novo' if novo else 'Editar' }} colaborador{% endblock %}
+{% block content %}
+<div class="card" style="max-width:520px">
+  <h1>{{ 'Novo colaborador' if novo else 'Editar colaborador' }}</h1>
+  <form method="post">
+    <label>Nome</label><input type="text" name="nome" value="{{ c.nome or '' }}" required>
+    <label>Matrícula</label><input type="text" name="matricula" value="{{ c.matricula or '' }}" required>
+    <label>Tag RFID (o número que aparece na leitura)</label><input type="text" name="tag" value="{{ c.tag or '' }}" required>
+    <label>Cargo</label><input type="text" name="cargo" value="{{ c.cargo or '' }}">
+    <div class="check"><input type="checkbox" id="acesso" name="acesso" {{ 'checked' if c.acesso else '' }}><label for="acesso">Tem acesso à sala de projeto</label></div>
+    <div class="check"><input type="checkbox" id="ativo" name="ativo" {{ 'checked' if c.ativo else '' }}><label for="ativo">Colaborador ativo</label></div>
+    <p><button class="btn" type="submit">Salvar</button>
+       <a class="btn sec" href="{{ url_for('colaboradores') }}">Cancelar</a></p>
+  </form>
+</div>
+{% endblock %}

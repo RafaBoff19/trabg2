@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Logs{% endblock %}
+{% block content %}
+<h1>Logs de acesso</h1>
+<form method="get" class="row">
+  <div><label>Data</label><input type="date" name="data" value="{{ dia }}"></div>
+  <div><label>Tipo</label>
+    <select name="tipo"><option value="">Todos</option>
+      {% for t in tipos %}<option value="{{ t }}" {{ 'selected' if t == tipo else '' }}>{{ t }}</option>{% endfor %}
+    </select></div>
+  <div style="flex:0"><button class="btn" type="submit">Filtrar</button></div>
+  <div style="flex:0"><a class="btn sec" href="{{ url_for('exportar_csv', data=dia) }}">CSV</a></div>
+</form>
+<table>
+  <tr><th>Data e hora</th><th>Colaborador</th><th>Matrícula</th><th>Tag</th><th>Evento</th></tr>
+  {% for e in eventos %}
+  <tr><td>{{ e.timestamp }}</td><td>{{ e.nome or '— (tag desconhecida)' }}</td><td>{{ e.matricula or '' }}</td>
+      <td>{{ e.tag }}</td><td><span class="tag t-{{ e.tipo }}">{{ e.tipo }}</span></td></tr>
+  {% else %}
+  <tr><td colspan="5" class="muted">Nenhum evento encontrado.</td></tr>
+  {% endfor %}
+</table>
+<p class="muted">Mostrando até 500 eventos, do mais recente para o mais antigo.</p>
+{% endblock %}
